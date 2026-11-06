@@ -1,4 +1,4 @@
-FROM node:18.20.8-alpine3.21 AS builder
+FROM node:26-alpine AS builder
 
 ENV HUSKY=0
 
@@ -22,7 +22,7 @@ COPY . .
 RUN pnpm run build
 RUN pnpm prune --production
 
-FROM gcr.io/distroless/nodejs18-debian11 AS production
+FROM gcr.io/distroless/nodejs26-debian13 AS production
 
 
 ENV NODE_ENV=production
@@ -38,4 +38,4 @@ EXPOSE 3000
 
 # Open ENT : distroless n'a pas d'utilisateur « node » (celui de node:alpine en 1.0.2).
 USER nonroot
-CMD [ "--es-module-specifier-resolution=node", "/usr/src/app/dist/index.js" ]
+CMD [ "/usr/src/app/dist/index.js" ]
