@@ -215,7 +215,9 @@ function collectStats(): Promise<{ workers: WorkerStats[]; partial: boolean }> {
 
 function percentile(sorted: number[], p: number): number {
   if (!sorted.length) return 0;
-  return sorted[Math.min(sorted.length - 1, Math.ceil((p / 100) * sorted.length) - 1)];
+  return sorted[
+    Math.min(sorted.length - 1, Math.ceil((p / 100) * sorted.length) - 1)
+  ];
 }
 
 function readPackage(): {
@@ -257,7 +259,12 @@ export async function healthController(res: Response, serviceVersion: number) {
   const totals: Record<string, number> = {};
   for (const worker of workers) {
     for (const [name, stats] of Object.entries(worker.operations)) {
-      const m = (merged[name] ??= { count: 0, totalMs: 0, maxMs: 0, samples: [] });
+      const m = (merged[name] ??= {
+        count: 0,
+        totalMs: 0,
+        maxMs: 0,
+        samples: [],
+      });
       m.count += stats.count;
       m.totalMs += stats.totalMs;
       m.maxMs = Math.max(m.maxMs, stats.maxMs);
