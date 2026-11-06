@@ -5,6 +5,21 @@
 * Développeur(s) : Edifice
 * Description : service permettant de transformer des contenus de l'ancien éditeur dans le nouveau format tiptap.
 
+# Fork Open ENT
+
+Branche `X.Y.Z-patched-dev`, tag `X.Y.Z-patched`, image `ghcr.io/open-ent/edifice-tiptap-transformer`
+publiée par `.github/workflows/build-and-publish.yml`. Différences avec l'amont :
+
+- **Extensions** : `@open-ent/tiptap-extensions` (GitHub Packages) à la place de `@edifice.io/tiptap-extensions`.
+  Un bloc de l'éditeur absent de `EXTENSIONS` (ou de `ADDITIONAL_EXTENSIONS`, activé par
+  `additionalExtensionIds`) est supprimé du `cleanHtml` que blog, actualités, wiki et messagerie enregistrent.
+- **Supervision** (lue par le dashboard, `/admin/configuration/openent?tab=content-transformer`) :
+  - `GET /health` : versions, blocs connus, compteurs et durées par opération, codes de réponse et
+    dernières erreurs de `/transform`, agrégés sur tous les workers ;
+  - `POST /diagnose` (`{ "html": "…" }`) : `cleanHtml`, et les éléments et attributs supprimés ou ajoutés.
+- **Image** : jeton npm passé en secret de construction (`--secret id=node_auth_token,src=…`),
+  dépendances de dev installées pour `tsc`, utilisateur `nonroot` (distroless n'a pas d'utilisateur `node`).
+
 # Rich content transformer
 
 - [Rich content transformer](#rich-content-transformer)

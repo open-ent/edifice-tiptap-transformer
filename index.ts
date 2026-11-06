@@ -4,6 +4,7 @@ import "global-jsdom/register";
 import cluster from "cluster";
 import os from "os";
 import createServer from "./src/server.js";
+import { installPrimaryHealthAggregator } from "./src/controllers/health-controller.js";
 import { AggregatorRegistry } from "prom-client";
 import fs from 'fs';
 
@@ -26,6 +27,7 @@ if (cluster.isPrimary && desiredInstances > 1) {
   for (let i = 0; i < desiredInstances; i++) {
     cluster.fork();
   }
+  installPrimaryHealthAggregator();
   cluster.on("exit", (worker: any, code: number, signal: any) => {
     console.log(`msg="Worker died" pid=${worker.process.pid}"`);
   });

@@ -1,5 +1,6 @@
 import prom from 'prom-client';
 import { Express, Request, Response } from 'express';
+import { recordOperation } from './health-controller.js';
 
 export const h2jCounter = new prom.Counter({
   name: 'html_2_json_total',
@@ -69,4 +70,10 @@ export function updateCounterAndTimer(
   const elapsed = Date.now() - start;
   counter.inc();
   timer.observe(elapsed);
+  // Open ENT : même mesure, lisible par /health (les histogrammes prom-client gardent
+  // leurs seuils par défaut, en secondes, alors qu'on observe des millisecondes).
+  recordOperation(
+    (counter as unknown as { name: string }).name.replace(/_total$/, ''),
+    elapsed,
+  );
 }

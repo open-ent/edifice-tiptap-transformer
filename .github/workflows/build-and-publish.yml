@@ -1,0 +1,64 @@
+name: build-and-publish
+
+# Fork Open ENT : build de contrôle sur les branches, publication de l'image sur les tags
+# X.Y.Z-patched (ghcr.io/open-ent/edifice-tiptap-transformer).
+on:
+  push:
+    branches: ['**']
+    tags: ['*-patched']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        env:
+          # @open-ent/tiptap-extensions vient de GitHub Packages (jeton exigé même en lecture).
+          NODE_AUTH_TOKEN: ${{ secrets.OPENENT_PACKAGES_TOKEN }}
+        run: |
+          printf '%s' "$NODE_AUTH_TOKEN" > "$RUNNER_TEMP/node_auth_token"
+          DOCKER_BUILDKIT=1 docker build \
+            --secret id=node_auth_token,src="$RUNNER_TEMP/node_auth_token" \
+            -t content-transformer:ci .
+          rm -f "$RUNNER_TEMP/node_auth_token"
+
+      # Même contrainte qu'en prod (racine en lecture seule), plusieurs workers pour vérifier
+      # que /health agrège bien leurs compteurs, et un aller-retour réel par /transform.
+      - name: Smoke test (/transform + /health)
+        run: |
+          docker run -d --rm --read-only --name ct -e NB_THREADS=2 -p 3000:3000 content-transformer:ci
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3000/healthcheck >/dev/null && break
+            sleep 1
+          done
+          curl -sf -XPOST http://localhost:3000/transform -H 'Content-Type: application/json' \
+            -d '{"requestedFormats":["html","plainText"],"contentVersion":0,"htmlContent":"<p>Open <b>ENT</b></p>"}' \
+            | tee /dev/stderr | grep -q '<strong>ENT</strong>'
+          HEALTH=$(curl -sf http://localhost:3000/health)
+          echo "$HEALTH"
+          echo "$HEALTH" | grep -q '"status":"ok"' || { docker logs ct; docker stop ct; exit 1; }
+          echo "$HEALTH" | grep -q '"partial":false' || { docker logs ct; docker stop ct; exit 1; }
+          docker stop ct
+
+      - name: Log in to GHCR
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push image
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          IMAGE="ghcr.io/${{ github.repository_owner }}/edifice-tiptap-transformer"
+          docker tag content-transformer:ci "$IMAGE:${GITHUB_REF_NAME}"
+          docker push "$IMAGE:${GITHUB_REF_NAME}"

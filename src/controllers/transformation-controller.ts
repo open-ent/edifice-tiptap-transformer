@@ -14,23 +14,23 @@ import { generateHTML, generateJSON } from '@tiptap/html';
 import {
   AttachmentTransformer,
   ConversationHistoryBody,
-} from '@edifice.io/tiptap-extensions';
-import { Alert } from '@edifice.io/tiptap-extensions/alert';
-import { Attachment } from '@edifice.io/tiptap-extensions/attachment';
-import { Audio } from '@edifice.io/tiptap-extensions/audio';
-import { ConversationHistory } from '@edifice.io/tiptap-extensions/conversation-history';
-import { FontSize } from '@edifice.io/tiptap-extensions/font-size';
-import { CustomHeading } from '@edifice.io/tiptap-extensions/heading';
-import { CustomHighlight } from '@edifice.io/tiptap-extensions/highlight';
-import { Hyperlink } from '@edifice.io/tiptap-extensions/hyperlink';
-import { Iframe } from '@edifice.io/tiptap-extensions/iframe';
-import { Image } from '@edifice.io/tiptap-extensions/image';
-import { InformationPane } from '@edifice.io/tiptap-extensions/information-pane';
-import { LineHeight } from '@edifice.io/tiptap-extensions/line-height';
-import { Linker } from '@edifice.io/tiptap-extensions/linker';
-import { MathJax } from '@edifice.io/tiptap-extensions/mathjax';
-import { Paragraph } from '@edifice.io/tiptap-extensions/paragraph';
-import { Video } from '@edifice.io/tiptap-extensions/video';
+} from '@open-ent/tiptap-extensions';
+import { Alert } from '@open-ent/tiptap-extensions/alert';
+import { Attachment } from '@open-ent/tiptap-extensions/attachment';
+import { Audio } from '@open-ent/tiptap-extensions/audio';
+import { ConversationHistory } from '@open-ent/tiptap-extensions/conversation-history';
+import { FontSize } from '@open-ent/tiptap-extensions/font-size';
+import { CustomHeading } from '@open-ent/tiptap-extensions/heading';
+import { CustomHighlight } from '@open-ent/tiptap-extensions/highlight';
+import { Hyperlink } from '@open-ent/tiptap-extensions/hyperlink';
+import { Iframe } from '@open-ent/tiptap-extensions/iframe';
+import { Image } from '@open-ent/tiptap-extensions/image';
+import { InformationPane } from '@open-ent/tiptap-extensions/information-pane';
+import { LineHeight } from '@open-ent/tiptap-extensions/line-height';
+import { Linker } from '@open-ent/tiptap-extensions/linker';
+import { MathJax } from '@open-ent/tiptap-extensions/mathjax';
+import { Paragraph } from '@open-ent/tiptap-extensions/paragraph';
+import { Video } from '@open-ent/tiptap-extensions/video';
 
 import { Color } from '@tiptap/extension-color';
 import FontFamily from '@tiptap/extension-font-family';
@@ -59,7 +59,7 @@ import {
   updateCounterAndTimer,
 } from './metrics-controller.js';
 
-const EXTENSIONS = [
+export const EXTENSIONS = [
   StarterKit.configure({ paragraph: false }),
   Paragraph,
   CustomHighlight.configure({

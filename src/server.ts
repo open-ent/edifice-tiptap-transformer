@@ -1,10 +1,17 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express, NextFunction, Request, Response } from 'express';
 import 'global-jsdom/register';
 import {
   healthCheck,
   transformController,
 } from './controllers/transformation-controller.js';
 import { initMetrics } from './controllers/metrics-controller.js';
+import {
+  diagnoseController,
+  healthController,
+  installWorkerHealthHandler,
+  recordRouteError,
+  trackTransformResponses,
+} from './controllers/health-controller.js';
 
 // @ts-ignore
 global.CSS = {
@@ -19,6 +26,7 @@ export default function createServer() {
   const serviceVersion = 1;
 
   initMetrics(app);
+  installWorkerHealthHandler();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const expressOptions: any = {};
@@ -26,6 +34,7 @@ export default function createServer() {
     expressOptions['limit'] = process.env.MAX_BODY_SIZE;
   }
 
+  app.use(trackTransformResponses);
   app.use(express.json(expressOptions));
   app.use(
     (
@@ -36,6 +45,7 @@ export default function createServer() {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       next: express.NextFunction,
     ) => {
+      res.locals.errorKind = err.type ?? 'unhandled.error';
       if (err.status === 413 || err.type === 'entity.too.large') {
         console.warn(`msg="payload.too.large"`);
         res.status(413).send('payload.too.large');
@@ -58,6 +68,11 @@ export default function createServer() {
   app.get('/healthcheck', (req: Request, res: Response) => {
     healthCheck(res);
   });
+  app.get('/health', (req: Request, res: Response, next: NextFunction) => {
+    healthController(res, serviceVersion).catch(next);
+  });
+  app.post('/diagnose', diagnoseController);
+  app.use(recordRouteError);
 
   app.listen(port, () => {
     console.log(`msg="Example app listening on port ${port}"`);
